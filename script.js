@@ -1,71 +1,107 @@
-let operator;
-let result = 0;
-let calculation;
+let currentOperand = '';
+let previousOperand = '';
+let operation = undefined;
 const numBtn = document.querySelectorAll('.number');
 const operatorBtn = document.querySelectorAll('.operator');
 const calcBtn = document.querySelector('.calculate');
-const display = document.querySelector('#display');
-const total = document.querySelector('#total');
+const clearBtn = document.querySelector('.clear');
+const backBtn = document.querySelector('.backspace');
+const currentOperandText = document.querySelector('.current-operand');
+const previousOperandText = document.querySelector('.previous-operand');
 
-function addNums() {
-    result = result + calculation;
-    return result;
+function appendNumber(number) {
+    if (number === '.' && currentOperand.includes('.')) return;
+    currentOperand = currentOperand + number;
 }
 
-function subNums() {
-    result = result - calculation;
-    return result;
+function operatorSelect(operator) {
+    if (currentOperand === '') return;
+    if (previousOperand !== '') {
+        operate();
+    }
+    operation = operator;
+    previousOperand = currentOperand;
+    currentOperand = ''
 }
 
-function multiplyNums() {
-    result = result * calculation;
-    return result;
+function calculate() {
+    let result;
+    switch (operation) {
+        case '+':
+            result = (Number(previousOperand) + Number(currentOperand));
+            break;
+        case '-':
+            result = (Number(previousOperand) - Number(currentOperand));
+            break;
+        case '*':
+            result =(Number(previousOperand) * Number(currentOperand));
+            break;
+        case '/':
+            result = (Number(previousOperand) / Number(currentOperand));
+            break;
+        default:
+            return;
+    }
+    currentOperand = result;
+    operation = undefined; 
+    previousOperand = '';
 }
 
-function divideNums() {
-    result = result / calculation;
-    return result;
+function getDisplayNum(num) {
+    const strNum = num.toString();
+    const intDigits = Number(strNum.split('.')[0]);
+    const decimalDigits = strNum.split('.')[1];
+    let intDisplay;
+    if (isNaN(intDigits)) {
+        intDisplay = '';
+    } else {
+        intDisplay = intDigits.toLocaleString('en', {
+            maximumFractionDigits: 0
+        })
+    }
+    if (decimalDigits != null) {
+        return `${intDisplay}.${decimalDigits}`
+    } else {
+        return intDisplay;
+    }
 }
 
-function operate() {
-    if (operator === '+') {
-        return addNums();
-    } else if (operator === '-') {
-        return subNums();
-    } else if (operator === '*') {
-        return multiplyNums();
-    } else if (operator === '/') {
-        return divideNums();
+function updateDisplay() {
+    currentOperandText.textContent = getDisplayNum(currentOperand);
+    if (operation != null) {
+        previousOperandText.innerText = `${getDisplayNum(previousOperand)} ${operation}`
     }
 }
 
 numBtn.forEach((input) => { input.addEventListener('click', () => {
-        display.textContent = Number(input.value);
-        if (result === 0) {
-        result = Number(input.value);
-        } else {
-        calculation = Number(input.value);
-        }
+    appendNumber(input.value);
+    updateDisplay();       
     })
 })
 
 operatorBtn.forEach((input) => { input.addEventListener('click', () => {
-        display.textContent = input.value;
-        if (input.value === '+') {
-        operator = '+';
-        } else if (input.value === '-') {
-        operator = '-';
-        } else if (input.value === '*') {
-        operator = '*';
-        } else if (input.value === '/') {
-        operator = '/';
-        }
+    operatorSelect(input.value);
+    updateDisplay();   
     })
 })
 
 calcBtn.addEventListener('click', () => {
-    total.textContent = operate();
+    calculate();
+    updateDisplay();
 })
+
+clearBtn.addEventListener('click', () => {
+    currentOperand = '';
+    previousOperand = '';
+    operation = undefined;
+    updateDisplay();
+})
+    
+backBtn.addEventListener('click', () => {
+    currentOperand = currentOperand.slice(0, -1);
+    updateDisplay();
+})
+
 
 
 
